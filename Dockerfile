@@ -34,6 +34,14 @@ RUN set -x \
     && rm bin/*.bat \
     && rm tomcat.tar.gz*
 
+RUN apt-get update && \
+    apt-get install build-essential openssl libssl-dev
+
+RUN curl -fSL "http://ftp.cixug.es/apache//apr/apr-1.5.2.tar.gz" -O \
+    && tar xvzf apr-1.5.2.tar.gz \
+    && cd apr-1.5.2 \
+    && ./configure && make && make install
+
 EXPOSE 8080
 
 CMD ["catalina.sh", "run"]
