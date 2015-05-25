@@ -1,5 +1,15 @@
 FROM java:7-jre
 
+# ################################################################################ APR
+RUN apt-get update && \
+    apt-get install -yq build-essential openssl libssl-dev libtcnative-1
+
+RUN curl -fSL "http://ftp.cixug.es/apache/apr/apr-1.5.2.tar.gz" -O \
+    && tar xvzf apr-1.5.2.tar.gz \
+    && cd apr-1.5.2 \
+    && ./configure --prefix=/usr && make && make install
+
+# ################################################################################ Tomcat 7
 ENV CATALINA_HOME /tomcat
 ENV PATH $CATALINA_HOME/bin:$PATH
 ENV CATALINA_CONF $CATALINA_HOME/conf
@@ -34,14 +44,7 @@ RUN set -x \
     && rm bin/*.bat \
     && rm tomcat.tar.gz*
 
-RUN apt-get update && \
-    apt-get install build-essential openssl libssl-dev
-
-RUN curl -fSL "http://ftp.cixug.es/apache//apr/apr-1.5.2.tar.gz" -O \
-    && tar xvzf apr-1.5.2.tar.gz \
-    && cd apr-1.5.2 \
-    && ./configure && make && make install
-
+# ################################################################################ RUN
 EXPOSE 8080
 
 CMD ["catalina.sh", "run"]
