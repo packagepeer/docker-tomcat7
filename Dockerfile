@@ -1,8 +1,22 @@
 FROM java:7-jre
 
+ENV TOMCAT_MAJOR 7
+ENV TOMCAT_VERSION 7.0.62
+ENV TOMCAT_TGZ_URL https://www.apache.org/dist/tomcat/tomcat-$TOMCAT_MAJOR/v$TOMCAT_VERSION/bin/apache-tomcat-$TOMCAT_VERSION.tar.gz
 ENV CATALINA_HOME /tomcat
 ENV PATH $CATALINA_HOME/bin:$PATH
 ENV CATALINA_CONF $CATALINA_HOME/conf
+
+# ################################################################################ APR
+RUN apt-get update && \
+    apt-get install -yq build-essential openssl libssl-dev libtcnative-1
+
+RUN cd /tmp \
+    && curl -fSL "http://ftp.cixug.es/apache/apr/apr-1.5.2.tar.gz" -O \
+    && tar xvzf apr-1.5.2.tar.gz && cd apr-1.5.2 \
+    && ./configure --prefix=/usr && make && make install
+
+# ################################################################################ Tomcat 7
 RUN mkdir -p "$CATALINA_HOME"
 WORKDIR $CATALINA_HOME
 
@@ -22,10 +36,6 @@ RUN gpg --keyserver pool.sks-keyservers.net --recv-keys \
     F3A04C595DB5B6A5F1ECA43E3B7BBB100D811BBE \
     F7DA48BB64BCB84ECBA7EE6935CD23C10D498E23
 
-ENV TOMCAT_MAJOR 7
-ENV TOMCAT_VERSION 7.0.62
-ENV TOMCAT_TGZ_URL https://www.apache.org/dist/tomcat/tomcat-$TOMCAT_MAJOR/v$TOMCAT_VERSION/bin/apache-tomcat-$TOMCAT_VERSION.tar.gz
-
 RUN set -x \
     && curl -fSL "$TOMCAT_TGZ_URL" -o tomcat.tar.gz \
     && curl -fSL "$TOMCAT_TGZ_URL.asc" -o tomcat.tar.gz.asc \
@@ -34,6 +44,7 @@ RUN set -x \
     && rm bin/*.bat \
     && rm tomcat.tar.gz*
 
+# ################################################################################ RUN
 EXPOSE 8080
 
 CMD ["catalina.sh", "run"]
